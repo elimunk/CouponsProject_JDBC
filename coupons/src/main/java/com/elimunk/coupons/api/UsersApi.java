@@ -45,7 +45,7 @@ public class UsersApi {
 		return usersController.getUser(userId);
 	}
 	
-	@GetMapping("/allUsers")
+	@GetMapping("/all")
 	public List<User> getAllUsers() throws ApplicationException {
 		return usersController.getAllUsers();
 	}

@@ -44,7 +44,7 @@ public class CompaniesApi {
 		return companiesController.getCompany(companyId);
 	}
 	
-	@GetMapping("/allCompanies")
+	@GetMapping("/all")
 	public List<Company> getAllCompanies() throws ApplicationException {
 		return companiesController.getAllCompanies();
 	}

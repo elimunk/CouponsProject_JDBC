@@ -45,7 +45,7 @@ public class CustomersApi {
 		return customersController.getCustomer(customerId);
 	}
 	
-	@GetMapping("/allCustomers")
+	@GetMapping("/all")
 	public List<Customer> getAllCustomers() throws ApplicationException {
 		return customersController.getAllCustomers();
 	}

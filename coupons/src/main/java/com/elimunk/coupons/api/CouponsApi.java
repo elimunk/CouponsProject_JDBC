@@ -46,42 +46,39 @@ public class CouponsApi {
 		return couponController.getCoupon(id);
 	}
 	
-	@GetMapping("/allCoupons")
+	@GetMapping("/all")
 	public List<Coupon> getAllCoupons() throws ApplicationException {
 		return couponController.getAllCoupons();
 	}
 	
-	@GetMapping("/companyCoupons")
-	public List<Coupon> getCompanyCoupons( @RequestParam("companyId") long companyId) throws ApplicationException {
+	@GetMapping("/byCompanyId")
+	public List<Coupon> getCompanyCoupons( @RequestParam("id") long companyId) throws ApplicationException {
 		return couponController.getCompanyCoupons(companyId);
 	}
 	
 	@GetMapping("/byCompanyIdAndMaxPrice")
-	public List<Coupon> getCompanyCouponsByMaxPrice( @RequestParam("companyId") long companyId, @RequestParam("maxPrice") double maxPrice) throws ApplicationException {
+	public List<Coupon> getCompanyCouponsByMaxPrice( @RequestParam("id") long companyId, @RequestParam("maxPrice") double maxPrice) throws ApplicationException {
 		return couponController.getCompanyCouponsByMaxPrice(companyId, maxPrice);
 	}
 	
 	@GetMapping("/byCompanyIdAndCategory")
-	public List<Coupon> getCompanyCouponsByCategory( @RequestParam("companyId") long id , @RequestParam("category") Category couponType) throws ApplicationException{
+	public List<Coupon> getCompanyCouponsByCategory( @RequestParam("id") long id , @RequestParam("category") Category couponType) throws ApplicationException{
 		return couponController.getCompanyCouponsByCategory( id , couponType);
 	}
 	
-	@GetMapping("/customerCoupons")
-	public List<Coupon> getCustomerCoupons(@RequestParam("customerId") long customerId) throws ApplicationException {
+	@GetMapping("/byCustomerId")
+	public List<Coupon> getCustomerCoupons(@RequestParam("id") long customerId) throws ApplicationException {
 		return couponController.getCustomerCoupons(customerId);
 	}
 	
 	@GetMapping("/byCustomerIdAndMaxPrice")
-	public List<Coupon> getCustomerCouponsByMaxPrice(@RequestParam("customerId") long customerId, @RequestParam("maxPrice") double maxPrice) throws ApplicationException {
+	public List<Coupon> getCustomerCouponsByMaxPrice(@RequestParam("id") long customerId, @RequestParam("maxPrice") double maxPrice) throws ApplicationException {
 		return couponController.getCustomerCouponsByMaxPrice(customerId, maxPrice);
 	}
 	
 	@GetMapping("/byCustomerIdAndCategory")
-	public List<Coupon> getCustomerCouponsByCategory(@RequestParam("customerId") long customerId, @RequestParam("category") Category category) throws ApplicationException {
+	public List<Coupon> getCustomerCouponsByCategory(@RequestParam("id") long customerId, @RequestParam("category") Category category) throws ApplicationException {
 		return couponController.getCustomerCouponsByCategory(customerId, category);
 	}
 
-	
-	
-	
 }
