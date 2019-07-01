@@ -42,7 +42,7 @@ public class CouponsDao implements ICouponsDao {
 			//If there was an exception in the "try" block above, it is caught here and notifies a level above.
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(),  "The 'is coupon exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(),  "The 'is coupon exist' query is failed ",true);
 		} finally {
 			// after all close all the resources
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
@@ -66,7 +66,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(),  "The 'is coupon exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(),  "The 'is coupon exist' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -108,13 +108,14 @@ public class CouponsDao implements ICouponsDao {
 				long id = resultSet.getLong(1);
 				// Set the coupon id and return the id
 				coupon.setId(id);
+				System.out.println("Coupon No " + id + " created successfully");
 				return id;
 			} else {
-				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to create purchase id");
+				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to create purchase id",true);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to add Coupon");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to add Coupon",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -143,7 +144,7 @@ public class CouponsDao implements ICouponsDao {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update coupon failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update coupon failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -151,7 +152,7 @@ public class CouponsDao implements ICouponsDao {
 
 	// update the coupon amount after purchase
 	@Override
-	public void uptateCouponAmount(long couponId , int amount) throws ApplicationException {
+	public void updateCouponAmount(long couponId , int amount) throws ApplicationException {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		try {
@@ -165,7 +166,7 @@ public class CouponsDao implements ICouponsDao {
 				System.out.println("Coupon quantity No " + couponId + " updated successfully");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update coupon failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update coupon failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -186,7 +187,7 @@ public class CouponsDao implements ICouponsDao {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -206,7 +207,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company coupon is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company coupon is failed " ,true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -229,7 +230,7 @@ public class CouponsDao implements ICouponsDao {
 				System.out.println("No expired coupons found");	
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon failed " ,true );
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -253,7 +254,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -276,7 +277,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get one coupon failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get one coupon failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -302,7 +303,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -328,7 +329,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -355,7 +356,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get company coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -382,7 +383,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -410,7 +411,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -438,7 +439,7 @@ public class CouponsDao implements ICouponsDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer coupons failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -462,7 +463,7 @@ public class CouponsDao implements ICouponsDao {
 			return coupon;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract coupon from ResultSet");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract coupon from ResultSet",true);
 		}
 	}
 

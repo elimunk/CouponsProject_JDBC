@@ -37,12 +37,12 @@ public class BuildDbUtils {
 			+ "`company_id` BIGINT NOT NULL,"
 			+ "`category` VARCHAR(40) NOT NULL," 
 			+ "`title` VARCHAR(40) UNIQUE NOT NULL,"
-			+ "`description` VARCHAR(400) NOT NULL," 
+			+ "`description` VARCHAR(1000) NOT NULL," 
 			+ "`start_date` DATE NOT NULL DEFAULT '0000-00-00',"
 			+ "`end_date`  DATE NOT NULL DEFAULT '0000-00-00'," 
 			+ "`amount` INT NOT NULL DEFAULT 0,"
 			+ "`price` DOUBLE NOT NULL DEFAULT 0.0 ," 
-			+ "`image` VARCHAR(20) NULL," + "PRIMARY KEY (`coupon_id`),"
+			+ "`image` VARCHAR(2000) NULL," + "PRIMARY KEY (`coupon_id`),"
 			+ "FOREIGN KEY (`company_id`) REFERENCES `companies` (`company_id`),"
 			+ "FOREIGN KEY (`category`) REFERENCES `categories` (`name`)" + ")";
 
@@ -104,7 +104,7 @@ public class BuildDbUtils {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Create Data baseed was failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Create Data baseed was failed " ,true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -130,7 +130,7 @@ public class BuildDbUtils {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Create table '" + str[5] + "' failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Create table '" + str[5] + "' failed " ,true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -152,7 +152,7 @@ public class BuildDbUtils {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete table '" + table + "' failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete table '" + table + "' failed " , true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -177,7 +177,7 @@ public class BuildDbUtils {
 
 			} catch (SQLException e) {
 				e.printStackTrace();
-				throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "insert category failed ");
+				throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "insert category failed " , true);
 			} finally {
 				JdbcUtils.closeResources(connection, preparedStatement);
 			}

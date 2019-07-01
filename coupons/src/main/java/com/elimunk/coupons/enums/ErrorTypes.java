@@ -2,7 +2,7 @@ package com.elimunk.coupons.enums;
 
 public enum ErrorTypes {
 
-GENERAL_ERROR("GENERAL ERROR "),
+GENERAL_ERROR("ooops! something went wrong :( "),
 HACKING_ERROR("You don't have permission!"),
 LOGIN_FAILED("Login failed! "),
 INVALID_NAME("The name is not valid! only letters are allowed "),

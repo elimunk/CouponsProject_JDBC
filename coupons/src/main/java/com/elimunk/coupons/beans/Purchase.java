@@ -4,7 +4,7 @@ public class Purchase {
 
 	// Properties
 
-	private long id;
+	private long purchaseId;
 	private long customerId;
 	private long couponId;
 	private int amount;
@@ -23,11 +23,11 @@ public class Purchase {
 	// setters & getters
 
 	public long getId() {
-		return id;
+		return purchaseId;
 	}
 
 	public void setId(long id) {
-		this.id = id;
+		this.purchaseId = id;
 	}
 
 	public long getCustomerId() {

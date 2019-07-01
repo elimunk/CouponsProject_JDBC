@@ -39,7 +39,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is User Exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is User Exist' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -63,7 +63,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is User Exist By Name' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is User Exist By Name' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -93,11 +93,11 @@ public class UsersDao implements IUsersDao{
 				System.out.println("User No " + userId + " created successfully");
 				return userId;
 			} else
-				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), " Get User id from resutSet was failed");
+				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), " Get User id from resutSet was failed",true);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), " Create User failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), " Create User failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -121,7 +121,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update user failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update user failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -145,7 +145,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user is failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user is failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -170,7 +170,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user is failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user is failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -196,11 +196,37 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all users failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all users failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
 		return allUsers;
+	}
+	
+	@Override
+	public List<User> getCompanyUsers(long companyId) throws ApplicationException {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		List<User> companyUsers = new ArrayList<User>();
+		User user = null;
+		try {
+			connection = JdbcUtils.getConnection();
+			preparedStatement = connection.prepareStatement("SELECT * FROM users WHERE company_id = ?");
+			preparedStatement.setLong(1, companyId);
+			resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				user = extractUserFromResultSet(resultSet);
+				companyUsers.add(user);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all users failed ",true);
+		} finally {
+			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
+		}
+		return companyUsers;
 	}
 	
 	@Override
@@ -218,7 +244,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete user failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete user failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -240,7 +266,7 @@ public class UsersDao implements IUsersDao{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company users failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company users failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -261,13 +287,13 @@ public class UsersDao implements IUsersDao{
 			resultSet = preparedStatement.executeQuery();
 
 			if (!resultSet.next()) {
-				throw new ApplicationException(ErrorTypes.LOGIN_FAILED, DateUtils.getCurrentDateAndTime(), "Login failed ");
+				throw new ApplicationException(ErrorTypes.LOGIN_FAILED, DateUtils.getCurrentDateAndTime(), "Login failed ",false);
 			}
 			ClientType clientType = ClientType.valueOf(resultSet.getString("type"));
 			return clientType;
 
 		} catch (SQLException e) {
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user has failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get user has failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -287,7 +313,7 @@ public class UsersDao implements IUsersDao{
 		
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract user from ResultSet");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract user from ResultSet",true);
 		}
 	}
 

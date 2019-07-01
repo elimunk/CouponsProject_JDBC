@@ -19,6 +19,7 @@ public enum Category {
 	BEAUTY,
 	PETS,
 	ARTS,
-	FASHION
+	FASHION,
+	CAMERAS
 	
 }

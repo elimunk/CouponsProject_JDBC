@@ -18,7 +18,7 @@ public interface ICouponsDao {
 
 	void updateCoupon(Coupon coupon) throws ApplicationException;
 	
-	void uptateCouponAmount(long couponId , int amount) throws ApplicationException;
+	void updateCouponAmount(long couponId , int amount) throws ApplicationException;
 	
 	void deleteCoupon(long couponId) throws ApplicationException;
 	

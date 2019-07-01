@@ -37,7 +37,7 @@ public class CustomersDao implements ICustomersDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is customer exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is customer exist' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -60,7 +60,7 @@ public class CustomersDao implements ICustomersDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is customer exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is customer exist' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -73,26 +73,24 @@ public class CustomersDao implements ICustomersDao {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
-		String sqlQuery = "INSERT INTO customers(customer_id ,FIRST_NAME, LAST_NAME, EMAIL, Phone_number) VALUES (?,?,?,?,?)";
-		long customerId = customer.getUserCustomer().getId();
-		
+		String sqlQuery = "INSERT INTO customers(customer_id ,FIRST_NAME, LAST_NAME, EMAIL, Phone_number) VALUES (?,?,?,?,?)";		
 		try {
 			connection = JdbcUtils.getConnection();
 			preparedStatement = connection.prepareStatement(sqlQuery);
 
-			preparedStatement.setLong(1, customerId);
+			preparedStatement.setLong(1, customer.getId());
 			preparedStatement.setString(2, customer.getFirstName());
 			preparedStatement.setString(3, customer.getLastName());
 			preparedStatement.setString(4, customer.getEmail());
 			preparedStatement.setString(5, customer.getPhoneNumber());
 
 			preparedStatement.executeUpdate();
-			customer.setId(customerId);
-			return customerId;
+			System.out.println("Customer No " + customer.getId() + " created successfully");
+			return customer.getId();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to add customer");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to add customer",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -121,7 +119,7 @@ public class CustomersDao implements ICustomersDao {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update customer failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Update customer failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -143,7 +141,7 @@ public class CustomersDao implements ICustomersDao {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete customer failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete customer failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -166,11 +164,11 @@ public class CustomersDao implements ICustomersDao {
 			if (resultSet.next()) {
 				return resultSet.getLong("ID");
 			} else
-				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get the Id");
+				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get the Id",true);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "'Get customer Id' is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "'Get customer Id' is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -194,7 +192,7 @@ public class CustomersDao implements ICustomersDao {
 			} 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer is failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get customer is failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -220,7 +218,7 @@ public class CustomersDao implements ICustomersDao {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all customers failed");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Get all customers failed",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -242,7 +240,7 @@ public class CustomersDao implements ICustomersDao {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract customer from ResultSet");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract customer from ResultSet",true);
 		}
 	}
 }

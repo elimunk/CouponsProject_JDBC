@@ -28,5 +28,7 @@ public interface IUsersDao {
 
 	ClientType login(String userName, String password) throws ApplicationException;
 
+	List<User> getCompanyUsers(long companyId) throws ApplicationException;
+
 
 }

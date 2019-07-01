@@ -4,9 +4,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.elimunk.coupons.beans.PostLoginUserData;
 import com.elimunk.coupons.beans.User;
+import com.elimunk.coupons.beans.UserIdTypeAndToken;
 import com.elimunk.coupons.dao.CompaniesDao;
 import com.elimunk.coupons.dao.CustomersDao;
 import com.elimunk.coupons.dao.PurchasesDao;
@@ -29,13 +33,13 @@ public class UsersController {
 	
 	// Instances of 'Dao' levels for the users operations 
 	@Autowired
-	private UsersDao userDao = new UsersDao();
+	private UsersDao userDao;
 	@Autowired
-	private CompaniesDao companyDao = new CompaniesDao();
+	private CompaniesDao companyDao;
 	@Autowired
-	private CustomersDao customerDao = new CustomersDao();
+	private CustomersDao customerDao;
 	@Autowired
-	private PurchasesDao purchasesDao = new PurchasesDao();
+	private PurchasesDao purchasesDao;
 	
 	
 	public UsersController() {
@@ -52,11 +56,12 @@ public class UsersController {
 		return userDao.createUser(user);
 	}
 		
-	public void updateUser(User user) throws ApplicationException {
+	public void updateUser(User user, PostLoginUserData userData) throws ApplicationException {
+		validateUserAccess(user.getId(), userData);
 		// Check if the user exists. before the action
 		validateExistUser(user.getId());
 		// validate the update user before the creating 
-		validateUser(user);
+		validateUpdateUser(user);
 		// if user change the userName, validate that the userName not already taken
 		if (!userDao.getUser(user.getId()).getUserName().equals(user.getUserName())) {
 			validateUaerNameNotExist(user);
@@ -65,7 +70,8 @@ public class UsersController {
 		userDao.updateUser(user);
 	}
 	
-	public void deleteUser(long userId) throws ApplicationException {
+	public void deleteUser(long userId, PostLoginUserData userData) throws ApplicationException {
+		validateUserAccess(userId, userData);
 		// Check if the user exists. before the action
 		validateExistUser(userId);
 		// if the user is a customer user- delete the purchases and the customer first
@@ -88,7 +94,11 @@ public class UsersController {
 		return userDao.getAllUsers();
 	}
 	
-	public ClientType login(String userName, String password) throws ApplicationException {
+	public List<User> getCompanyUsers(long companyId) throws ApplicationException {
+		return userDao.getCompanyUsers(companyId);
+	}
+
+	public UserIdTypeAndToken login(String userName, String password) throws ApplicationException {
 		// Get the user type if login success
 		ClientType clientType = userDao.login(userName, password);
 		// generate new token for this user
@@ -98,33 +108,46 @@ public class UsersController {
 		// insert into the cache manager the token of the user and the data of the user
 		cacheManager.put(token, userData);
 		System.out.println("token: " + token+ " , Post Login User Data : " + userData);
+		UserIdTypeAndToken userTypeAndToken = new UserIdTypeAndToken (userData.getUserId() , clientType , token , userData.getCompanyId());
 		// return the user type
-		return clientType;
+		return userTypeAndToken;
 	}
 	
 	// validate the user before adding 
 	private void validateUser(User user) throws ApplicationException {
 		// the user name must contains minimum 5 characters and only this characters [ a-z A-Z 0-9 . @ _ - ] allowed
 		if (!ValidateUtils.isUserNameValid(user.getUserName())) {
-			throw new ApplicationException(ErrorTypes.INVALID_USER_NAME, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid userName.");
+			throw new ApplicationException(ErrorTypes.INVALID_USER_NAME, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid userName." ,false);
 		}
 		// password must contains 8 characters only. and atleast one letter and one number. Example 'a1234567'
 		if (!ValidateUtils.isPasswordValid(user.getPassword())) {
-			throw new ApplicationException(ErrorTypes.INVALID_PASSWORD, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid passowrd.");
+			throw new ApplicationException(ErrorTypes.INVALID_PASSWORD, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid passowrd." ,false);
 		}
 		// if the user is a company user , validate the company is exist
 		if (user.getType().name().equals("COMPANY")) {
 			if (!companyDao.isCompanyExistById(user.getCompanyId())) {
 				throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(), 
-						"Can't create user, The User contains invalid companyId. this company does not exist.");
+						"Can't create user, The User contains invalid companyId. this company does not exist." ,false);
 			}
+		}
+	}
+	
+	// validate the user before adding 
+	private void validateUpdateUser(User user) throws ApplicationException {
+		// the user name must contains minimum 5 characters and only this characters [ a-z A-Z 0-9 . @ _ - ] allowed
+		if (!ValidateUtils.isUserNameValid(user.getUserName())) {
+			throw new ApplicationException(ErrorTypes.INVALID_USER_NAME, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid userName." ,false);
+		}
+		// password must contains 8 characters only. and atleast one letter and one number. Example 'a1234567'
+		if (!ValidateUtils.isPasswordValid(user.getPassword())) {
+			throw new ApplicationException(ErrorTypes.INVALID_PASSWORD, DateUtils.getCurrentDateAndTime(), "Can't create user, The User contains invalid passowrd." ,false);
 		}
 	}
 	
 	// validate the user userName not already exist .
 	private void validateUaerNameNotExist(User user) throws ApplicationException {
 		if (userDao.isUserExistByName(user.getUserName())) {
-			throw new ApplicationException(ErrorTypes.USER_NAME_EXIST, DateUtils.getCurrentDateAndTime(), "The user name allredy exsist.");
+			throw new ApplicationException(ErrorTypes.USER_NAME_EXIST, DateUtils.getCurrentDateAndTime(), "The user name allredy exsist." ,false);
 		}
 	}
 	
@@ -132,7 +155,7 @@ public class UsersController {
 	// validate that the user exist
 	private void validateExistUser(long userId) throws ApplicationException {
 		if (!userDao.isUserExistById(userId)) {
-			throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(), "This user does not exist.");
+			throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(), "This user does not exist." ,false);
 		}
 	}
 	
@@ -150,6 +173,16 @@ public class UsersController {
 		return ""+token.hashCode()+ token.toUpperCase().hashCode();
 	}
 
-	
+	// checks that the user have the correct user Id before operation on the user
+	private void validateUserAccess(long userId, PostLoginUserData userData) throws ApplicationException {
+		// if the user type is not administrator, check that the user id is correct
+		if (userData.getClientType().name() != "ADMINISTRATOR") {
+			if (userId != userData.getUserId()) {
+				// if the user user Id is not correct throw HACKING ERROR
+				throw new ApplicationException(ErrorTypes.HACKING_ERROR, DateUtils.getCurrentDateAndTime(),
+						" HACKING! user id is not correct!" ,true);
+			}
+		}
+	}
 }
 

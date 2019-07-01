@@ -37,7 +37,7 @@ public class PurchasesDao implements IPurchasesDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is purchase exist' query is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "The 'is purchase exist' query is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -65,12 +65,12 @@ public class PurchasesDao implements IPurchasesDao {
 				return id;
 			}
 			else {
-				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to create purchase id");
+				throw new ApplicationException(ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to create purchase id",true);
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Add coupon purchase failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Add coupon purchase failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -92,7 +92,7 @@ public class PurchasesDao implements IPurchasesDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon purchase failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon purchase failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -113,7 +113,7 @@ public class PurchasesDao implements IPurchasesDao {
 	
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon purchase failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete coupon purchase failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -135,7 +135,7 @@ public class PurchasesDao implements IPurchasesDao {
 			} 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company purchases failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete company purchases failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
@@ -156,10 +156,34 @@ public class PurchasesDao implements IPurchasesDao {
 			} 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete customer purchases is failed ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete customer purchases is failed ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement);
 		}
+	}
+	
+	public void deleteExpiredCouponsPurchases() throws ApplicationException {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = JdbcUtils.getConnection();
+			preparedStatement = connection.prepareStatement("DELETE FROM purchases WHERE coupon_id IN (SELECT coupon_id FROM coupons WHERE end_date < CURDATE())");
+			int res = preparedStatement.executeUpdate();
+			
+			// if update effected
+			if (res != 0) {
+				// get the amount of row effected (coupons deleted in this case) 
+				int deletedAmount = preparedStatement.getUpdateCount();
+				System.out.println(deletedAmount + " expired purchases coupons deleted successfully.");
+			}else
+				System.out.println("No expired purchases coupons found");	
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Delete purchases coupon failed ",true);
+		} finally {
+			JdbcUtils.closeResources(connection, preparedStatement);
+		}
+		
 	}
 	
 	@Override
@@ -180,7 +204,7 @@ public class PurchasesDao implements IPurchasesDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get purchase. ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get purchase. ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
@@ -205,12 +229,65 @@ public class PurchasesDao implements IPurchasesDao {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get all purchases. ");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get all purchases. ",true);
 		} finally {
 			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
 		}
 		return allPurchases;
 	}
+	
+	@Override
+	public List<Purchase> getCompanyPurchases( long companyId) throws ApplicationException {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		List<Purchase> companyPurchases = new ArrayList<Purchase>();
+		
+		try {
+			connection = JdbcUtils.getConnection();
+			preparedStatement = connection.prepareStatement("SELECT * FROM purchases WHERE coupon_id IN (SELECT coupon_id FROM coupons WHERE company_id=?)");
+			preparedStatement.setLong(1, companyId);
+			resultSet = preparedStatement.executeQuery();
+			
+			while (resultSet.next()) {
+				Purchase purchase = extactPurchaseFromResultSet(resultSet);
+				companyPurchases.add(purchase);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get company purchases. ",true);
+		} finally {
+			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
+		}
+		return companyPurchases;
+	}
+	
+	@Override
+	public List<Purchase> getCustomerPurchases(long customerId) throws ApplicationException {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		List<Purchase> customerPurchases = new ArrayList<Purchase>();
+		
+		try {
+			connection = JdbcUtils.getConnection();
+			preparedStatement = connection.prepareStatement("SELECT * FROM purchases WHERE customer_Id=?");
+			preparedStatement.setLong(1, customerId);
+			resultSet = preparedStatement.executeQuery();
+			
+			while (resultSet.next()) {
+				Purchase purchase = extactPurchaseFromResultSet(resultSet);
+				customerPurchases.add(purchase);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to get customer purchases. ",true);
+		} finally {
+			JdbcUtils.closeResources(connection, preparedStatement, resultSet);
+		}
+		return customerPurchases;
+	}
+	
 	
 	
 	private Purchase extactPurchaseFromResultSet(ResultSet resultSet) throws ApplicationException {
@@ -224,7 +301,7 @@ public class PurchasesDao implements IPurchasesDao {
 		
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract purchase from ResultSet");
+			throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), "Failed to extract purchase from ResultSet",true);
 		}
 		return purchase;
 	}

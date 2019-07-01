@@ -1,12 +1,17 @@
 package com.elimunk.coupons.logic;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.elimunk.coupons.beans.Coupon;
+import com.elimunk.coupons.beans.PostLoginUserData;
 import com.elimunk.coupons.dao.CompaniesDao;
 import com.elimunk.coupons.dao.CouponsDao;
 import com.elimunk.coupons.dao.PurchasesDao;
@@ -17,51 +22,51 @@ import com.elimunk.coupons.utils.DateUtils;
 
 //this is the coupons logic level to control of all operations of the coupons 
 @Controller
-public class CouponsController {
+public class CouponsController implements TransactionManagementConfigurer {
 
 // properties
 	
 	// Instances of 'dao' levels for the operations 
 	@Autowired
-	private CouponsDao couponDao = new CouponsDao();
+	private CouponsDao couponDao;
 	@Autowired
-	private CompaniesDao companyDao = new CompaniesDao();
+	private CompaniesDao companyDao;
 	@Autowired
-	private PurchasesDao purchasesDao = new PurchasesDao();
+	private PurchasesDao purchasesDao;
 	
-	
+//	constructor
 	public CouponsController() {
-		super();
 	}
 
 //	methods
 
-	public void createCoupon(Coupon coupon) throws ApplicationException {
+	public long createCoupon(Coupon coupon , PostLoginUserData userData) throws ApplicationException {
+		// checks that the user have the correct company Id
+		validateUserAccess(coupon.getCompanyId(), userData);
 		// first we confirm that the coupon is valid to create
 		validateCoupon(coupon);
 		// this is to validate title
 		validateTitleCoupon(coupon);
 		// if coupon is valid - add to the database.
-		couponDao.addCoupon(coupon);
-		System.out.println("Coupon No " + coupon.getId() + " created successfully");
+		return couponDao.addCoupon(coupon);
 	}
 	
-	public void updateCoupon(Coupon couponToUpdate, long userCompanyId) throws ApplicationException {
+	public void updateCoupon(Coupon couponToUpdate, PostLoginUserData userData) throws ApplicationException {
 		// Check if the coupon exists. before the action
 		validateExistCoupon(couponToUpdate.getId());
 		// checks that the user have the correct company Id
-		validateUserCompanyId(couponToUpdate.getCompanyId(), userCompanyId);
+		validateUserAccess(couponToUpdate.getCompanyId(), userData);
 		// Check if the coupon changes is valid for update. before the action
 		validateCoupon(couponToUpdate);
 		// Update the coupon in the database
 		couponDao.updateCoupon(couponToUpdate);
 	}
 
-	public void deleteCoupon(long couponId, long userCompanyId) throws ApplicationException {
+	public void deleteCoupon(long couponId, PostLoginUserData userData) throws ApplicationException {
 		// Check if the coupon exists. before the action
 		validateExistCoupon(couponId);
 		// checks that the user have the correct company Id
-		validateUserCompanyId(couponDao.getCoupon(couponId).getCompanyId(), userCompanyId);
+		validateUserAccess(couponDao.getCoupon(couponId).getCompanyId(), userData);
 		// Delete the purchase of coupon in the database
 		purchasesDao.deletePurchaseByCouponId(couponId);
 		// Delete the coupon in the database
@@ -69,14 +74,13 @@ public class CouponsController {
 	}
 	
 	// this is deleting all of the expired coupons (used by daily job)
+	@Transactional
 	public void deleteExpiredCoupon() throws ApplicationException {
+		purchasesDao.deleteExpiredCouponsPurchases();
 		couponDao.deleteExpiredCoupons();
 	}
 	
 	public Coupon getCoupon(long couponId) throws ApplicationException {
-		// Check if the coupon exists. before the action
-		validateExistCoupon(couponId);
-		// Get the coupon from the database
 		return couponDao.getCoupon(couponId);
 	}
 
@@ -85,8 +89,8 @@ public class CouponsController {
 		return coupons;
 	}
 	
-	public List<Coupon> getCompanyCoupons(long companyId) throws ApplicationException {
-		List<Coupon> coupons = couponDao.getAllCoupons();
+	public List<Coupon> getCompanyCoupons(long companyId ) throws ApplicationException {
+		List<Coupon> coupons = couponDao.getCompanyCoupons(companyId);
 		return coupons;
 	}
 
@@ -124,24 +128,24 @@ public class CouponsController {
 	private void validateCoupon(Coupon coupon) throws ApplicationException {
 		if (!companyDao.isCompanyExistById(coupon.getCompanyId())) {
 			throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(),
-					"The companyId invalid! This company does not exsit");
+					"The companyId invalid! This company does not exsit" ,false);
 		}
-		if (coupon.getDescription().length() < 15) {
+		if (coupon.getDescription() != null && coupon.getDescription().length() < 15) {
 			throw new ApplicationException(ErrorTypes.INVALID_DESCRPTION, DateUtils.getCurrentDateAndTime(),
-					"Description '" + coupon.getDescription() + "' is not valid !must contain minimum 15 characters!");
+					"Description '" + coupon.getDescription() + "' is not valid !must contain minimum 15 characters!" ,false);
 		}
-		if (coupon.getEndDate().before(coupon.getStartDate()) || coupon.getEndDate().before(new Date())) {
+		if ( coupon.getEndDate()!= null &&  coupon.getEndDate().before(coupon.getStartDate()) ||coupon.getEndDate() != null && coupon.getEndDate().before(new Date())) {
 			throw new ApplicationException(ErrorTypes.INVALID_END_DATE, DateUtils.getCurrentDateAndTime(),
 					"Date '" + coupon.getEndDate()
-							+ "' is not valid! the end date cannot be earlier than the Start date or current date");
+							+ "' is not valid! the end date cannot be earlier than the Start date or current date" ,false);
 		}
-		if (coupon.getAmount() <= 0) {
+		if (coupon.getAmount() != 0 && coupon.getAmount() <= 0) {
 			throw new ApplicationException(ErrorTypes.VALUE_OF_ZERO, DateUtils.getCurrentDateAndTime(),
-					"Cant create coupon with amount 0 or under ");
+					"Cant create coupon with amount 0 or under " ,false);
 		}
-		if (coupon.getPrice() <= 0) {
+		if (coupon.getPrice() != 0 && coupon.getPrice() <= 0) {
 			throw new ApplicationException(ErrorTypes.VALUE_OF_ZERO, DateUtils.getCurrentDateAndTime(),
-					"The price value must contain a positive number");
+					"The price value must contain a positive number" ,false);
 		}
 	}
 	
@@ -149,28 +153,36 @@ public class CouponsController {
 	private void validateTitleCoupon(Coupon coupon) throws ApplicationException {
 		if (couponDao.isCouponExistByTitle(coupon.getTitle())) {
 			throw new ApplicationException(ErrorTypes.TITLE_EXIST, DateUtils.getCurrentDateAndTime(),
-					"The title of the coupon already exsit");
+					"The title of the coupon already exsit" ,false);
 		}
 		if (coupon.getTitle().length() > 50 || coupon.getTitle().length() < 2) {
 			throw new ApplicationException(ErrorTypes.INVALID_TITLE, DateUtils.getCurrentDateAndTime(),
-					"Title '" + coupon.getTitle() + "' is not valid !must contain 2 - 50 characters!");
+					"Title '" + coupon.getTitle() + "' is not valid !must contain 2 - 50 characters!" ,false);
 		}
 	}
 	
 	// validate that the coupon exist
 	private void validateExistCoupon(long couponId) throws ApplicationException {
 		if (!couponDao.isCouponExistById(couponId)) {
-			throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(), "The coupon is not exsit");
+			throw new ApplicationException(ErrorTypes.NOT_EXIST, DateUtils.getCurrentDateAndTime(), "The coupon is not exsit" ,false);
 		}
 	}
 
 	// checks that the user have the correct company Id before  operation on the coupon
-	private void validateUserCompanyId(long couponCompanyId , long userCompanyId) throws ApplicationException {
-		if (couponCompanyId != userCompanyId) {
-			// if the user company Id is not correct throw HACKING ERROR
-			throw new ApplicationException(ErrorTypes.HACKING_ERROR, DateUtils.getCurrentDateAndTime(),
-					" HACKING! company id is not corrcet!");
+	private void validateUserAccess(long couponCompanyId, PostLoginUserData userData) throws ApplicationException {
+		// if the user type is not administrator, check that the companyId is correct
+		if (userData.getClientType().name() != "ADMINISTRATOR") {
+			if (couponCompanyId != userData.getCompanyId()) {
+				// if the user company Id is not correct throw HACKING ERROR
+				throw new ApplicationException(ErrorTypes.HACKING_ERROR, DateUtils.getCurrentDateAndTime(),
+						" HACKING! company id is not correct!" ,true);
+			}
 		}
+	}
+
+	@Override
+	public PlatformTransactionManager annotationDrivenTransactionManager() {
+		return null;
 	}
 
 }

@@ -22,5 +22,9 @@ public interface IPurchasesDao {
 	Purchase getPurchase(long purchaseId) throws ApplicationException;
 
 	boolean isPurchaseExistById(long purchaseId) throws ApplicationException;
+
+	List<Purchase> getCustomerPurchases( long customerId ) throws ApplicationException;
+
+	List<Purchase> getCompanyPurchases( long companyId ) throws ApplicationException;
 		
 }

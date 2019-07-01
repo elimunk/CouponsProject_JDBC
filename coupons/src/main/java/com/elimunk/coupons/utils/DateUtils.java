@@ -19,14 +19,14 @@ public class DateUtils {
 		Date newDate = null;
 		if (!isStringDateValid(dateToParse)) {
 			throw new ApplicationException(ErrorTypes.INVALID_END_DATE,	DateUtils.getCurrentDateAndTime(), 
-					"Date '" + dateToParse + "'  is not valid! must be in the format \"yyyy-MM-dd\"");
+					"Date '" + dateToParse + "'  is not valid! must be in the format \"yyyy-MM-dd\"" ,false);
 		} else
 			try {
 				newDate = dateFormat.parse(dateToParse);
 			} catch (ParseException e) {
 				e.printStackTrace();
 				throw new ApplicationException(e, ErrorTypes.GENERAL_ERROR, DateUtils.getCurrentDateAndTime(), 
-						"parse date failed");
+						"parse date failed" ,false);
 			}
 		return newDate;
 	}
