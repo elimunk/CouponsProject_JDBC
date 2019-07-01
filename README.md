@@ -1,1 +1,1 @@
-# Coupons-Project_JDBC
+# CouponsProject_JDBC
