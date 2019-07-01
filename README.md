@@ -1,1 +1,1 @@
-# CouponsProject_JDBC
+# CouponsProject_v2_Spring_JDBC
